@@ -26,3 +26,74 @@
         , <&pro_micro 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> // ROW3
     ;
 };
+
+/* ─── TPS43 Touchpad via nice!view header pins ─────────────────────────
+ *
+ * nice!view header (Brain PCB)       TPS43 adapter
+ * ────────────────────────────       ─────────────
+ * MOSI  (P0.17)  ──────────────►    SDA
+ * SCK   (P0.20)  ──────────────►    SCL
+ * VCC   (3.3V)   ──────────────►    VCC
+ * GND            ──────────────►    GND
+ * CS    (P0.06)  ──────────────►    RDY
+ */
+
+/ {
+    tps43_input: tps43_input {
+        compatible = "zmk,input-listener";
+        device = <&tps43>;
+    };
+};
+
+&pinctrl {
+    i2c0_default: i2c0_default {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
+        };
+    };
+
+    i2c0_sleep: i2c0_sleep {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
+            low-power-enable;
+        };
+    };
+};
+
+&i2c0 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_FAST>;
+
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    tps43: iqs5xx@74 {
+        compatible = "azoteq,iqs5xx";
+        reg = <0x74>;
+        status = "okay";
+
+        /* RDY pin — nice!view CS (P0.06) */
+        rdy-gpios = <&gpio0 6 GPIO_ACTIVE_HIGH>;
+
+        /* Gestures */
+        one-finger-tap;
+        two-finger-tap;
+        press-and-hold;
+        press-and-hold-time = <250>;
+
+        /* Scrolling */
+        scroll;
+        natural-scroll-x;
+        natural-scroll-y;
+
+        flip-y;
+        switch-xy;
+
+        /* Tuning */
+        bottom-beta = <5>;
+        stationary-threshold = <5>;
+    };
+};

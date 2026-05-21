@@ -12,6 +12,13 @@ config ZMK_SPLIT_ROLE_CENTRAL
 
 endif
 
+if SHIELD_BRAIN_RIGHT
+
+config ZMK_POINTING_SPLIT
+    default y
+
+endif
+
 if SHIELD_BRAIN_LEFT || SHIELD_BRAIN_RIGHT
 config ZMK_SPLIT
     default y
